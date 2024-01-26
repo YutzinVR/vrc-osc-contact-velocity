@@ -29,7 +29,7 @@ pip install -r requirements.txt
  ```cmd
 python main.py
 ```
-6. Run the haptice device server (eg. GiggleTech OSC router). Ensure that your haptic device is turned on.
+6. Run the haptice device server (eg. GiggleTech OSC router). Make sure to configure the correct IP, port, and parameter addresses to listen to this contact velocity server. Ensure that your haptic device is turned on.
 7. Open VRChat.
 
 ## Credits

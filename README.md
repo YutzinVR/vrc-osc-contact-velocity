@@ -12,7 +12,7 @@ cd "<YOUR_DIRECTORY>\vrc-osc-contact-velocity\"
 ```
 3. (optional) Create a python virtual environment and activate it. <br/>
 ```cmd
-pip -m venv .venv
+python -m venv .venv
 .venv\Scripts\activate.bat
 ```
 5. Install the required python modules: <br/>

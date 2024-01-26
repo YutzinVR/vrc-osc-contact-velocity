@@ -37,8 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-        # publish with latest tag
-          tag_name: ${{ GitHub.ref }}
+          tag_name: Latest
           release_name: Release ${{ GitHub.ref }}
           body: |
             vrc-osc-contact-velocity

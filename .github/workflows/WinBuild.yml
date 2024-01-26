@@ -38,7 +38,6 @@ jobs:
         with:
           tag_name: ${{ github.event.head_commit.message }}
           release_name: ${{ github.event.head_commit.message }}
-          overwrite: true
           body: |
             vrc-osc-contact-velocity
           draft: false

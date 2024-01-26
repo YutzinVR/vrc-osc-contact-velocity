@@ -3,7 +3,7 @@ name: Windows Build
 on:
   workflow_dispatch:
   push:
-    branches: master
+    branches: main
 
 jobs:
   build-windows:
@@ -37,8 +37,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.event.head_commit.message }}
-          release_name: ${{ github.event.head_commit.message }}
+        # publish with latest tag
+          tag_name: ${{ GitHub.ref }}
+          release_name: Release ${{ GitHub.ref }}
           body: |
             vrc-osc-contact-velocity
           draft: false

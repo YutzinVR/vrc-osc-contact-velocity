@@ -22,7 +22,7 @@ pip install -r requirements.txt
 ## Setup:
 
 1. Add contact receivers for each haptic device to your VRChat Avatar.
-2. Add additional spherical contact receivers around the haptic device location to assist with velocity estimation. Evenly space the receivers for more consistent velocity estimation.
+2. (optional) Add additional spherical contact receivers around the haptic device location to assist with velocity estimation. Evenly space the receivers for more consistent velocity estimation.
 3. Add unique parameter keys for each contact receiver to your animation controller and map those back to the respective receivers.
 4. Change the settings in the configuration file ```Config.ini```. Parameter keys should match those specified in your unity project.
 5. Run the server<br/>

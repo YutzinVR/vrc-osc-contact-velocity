@@ -52,5 +52,5 @@ jobs:
         with:
           upload_url: ${{steps.create_release.outputs.upload_url}}
           asset_path: dist/main.exe
-          asset_name: vrc-osc-contact-velocity-Windows-amd64.exe
+          asset_name: vrc-osc-contact-velocity.exe
           asset_content_type: application/zip

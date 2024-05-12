@@ -4,6 +4,8 @@ from typing import List
 import numpy as np
 import os
 import re
+import sys
+import shutil
 import configparser
 
 from pythonosc.dispatcher import Dispatcher
@@ -280,10 +282,34 @@ class Server:
 
         print(f"{h.name} : Sending OSC to \"{h.client._address}:{h.client._port}\" at address \"{addr}\" : {hapticValue}")
 
+def get_config_path():
+    # Determine the directory where the executable resides
+    exe_dir = os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else __file__)
+    config_path = os.path.join(exe_dir, 'Config.ini')
+
+    # Check if the config file exists at the expected location
+    if not os.path.exists(config_path):
+        # Config file does not exist, copying from internal bundle to the executable directory
+        if getattr(sys, 'frozen', False):
+            # When running in a frozen state, copy from temporary bundle directory
+            internal_config_path = os.path.join(sys._MEIPASS, 'Config.ini')
+        else:
+            # When not frozen, assume the config file is in the same directory as the script
+            internal_config_path = os.path.join(os.path.dirname(__file__), 'Config.ini')
+        
+        try:
+            shutil.copy(internal_config_path, config_path)
+            print(f"Config.ini has been copied to {config_path}")
+        except Exception as e:
+            print(f"Failed to copy Config.ini: {str(e)}")
+
+    return config_path
+
 if __name__ == "__main__":
 
     # Get the config file from the current directory
-    configFilepath = os.getcwd() + os.sep +'Config.ini'
+
+    configFilepath = get_config_path()
 
 try:
     # Read the configuration settings from the config file

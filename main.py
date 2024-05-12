@@ -19,6 +19,11 @@ class Config:
         '''
         # Read configuration file
         self.config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+
+        # Check if configuration file exists
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError("Config file not found at path: " + filepath)
+
         self.config.read(filepath)
 
         # Details of the VRC OSC server
@@ -38,7 +43,7 @@ class Config:
         
         # HAPTIC DEVICES
         self.hapticDevices = self.setupHapticDevices()
-     
+
     def setupHapticDevices(self) -> List:
         '''
         Creates HapticDevice objects based on configuration file.
@@ -85,7 +90,7 @@ class Config:
         radii = [float(s.strip()) for s in config['VelocityProximityDetectors']['radii'].split(',')]
 
         if len(radii) != len(keys):
-            print("Number of proximity detector keys and number of radii must match.")
+            raise ValueError("Number of proximity detector keys and number of radii must match.")
 
         proximityDetectors = []
         for i in range(len(keys)):
@@ -280,9 +285,22 @@ if __name__ == "__main__":
     # Get the config file from the current directory
     configFilepath = os.getcwd() + os.sep +'Config.ini'
 
+try:
     # Read the configuration settings from the config file
     config = Config(configFilepath)
+except (FileNotFoundError,ValueError) as e:
+    print(f"Error: {e}")
 
+except configparser.Error as e:
+    print(f"Configuration Error: {e}")
+
+except Exception as e:
+    print(f"Unexpected error occurred: {e}")
+
+try:
     # Set up the server to listen for OSC parameters and forward them to the target server.
     server = Server(config)
+except Exception as e:
+    print(f"Unexpected error occurred: {e}")
 
+os.system("PAUSE")

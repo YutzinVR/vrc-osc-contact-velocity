@@ -14,9 +14,8 @@
 
 
 
-## 📝 Table of Contents
+<h2> 📝 Table of Contents </h2>
 
-- [📝 Table of Contents](#-table-of-contents)
 - [🧐 About ](#-about-)
 - [🏁 Getting Started ](#-getting-started-)
 - [✍️ Authors ](#️-authors-)
@@ -38,6 +37,8 @@ vrc-osc-contact-velocity.exe
 ```
 6. Run the haptice device server (eg. GiggleTech OSC router). Make sure to configure the correct IP, port, and parameter addresses to listen to this contact velocity server. Ensure that your haptic device is turned on.
 7. Open VRChat.
+
+For an in-depth guide on how to set up the contact receivers in Unity, see the [Avatar Setup Examples](./documentation/AvatarSetupExample.md).
 
 ## ✍️ Authors <a name = "authors"></a>
 

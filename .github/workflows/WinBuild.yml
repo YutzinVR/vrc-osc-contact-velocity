@@ -29,7 +29,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: Windows_Build
-          path: dist/main.exe
+          path: dist/vrc-osc-contact-velocity.exe
 
       - name: create release
         id: create_release
@@ -51,6 +51,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_path: dist/main.exe
+          asset_path: dist/vrc-osc-contact-velocity.exe
           asset_name: vrc-osc-contact-velocity.exe
           asset_content_type: application/zip

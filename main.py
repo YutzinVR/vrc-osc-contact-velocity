@@ -4,6 +4,8 @@ from typing import List
 import numpy as np
 import os
 import re
+import sys
+import shutil
 import configparser
 
 from pythonosc.dispatcher import Dispatcher
@@ -19,6 +21,11 @@ class Config:
         '''
         # Read configuration file
         self.config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+
+        # Check if configuration file exists
+        if not os.path.isfile(filepath):
+            raise FileNotFoundError("Config file not found at path: " + filepath)
+
         self.config.read(filepath)
 
         # Details of the VRC OSC server
@@ -38,7 +45,7 @@ class Config:
         
         # HAPTIC DEVICES
         self.hapticDevices = self.setupHapticDevices()
-     
+
     def setupHapticDevices(self) -> List:
         '''
         Creates HapticDevice objects based on configuration file.
@@ -85,7 +92,7 @@ class Config:
         radii = [float(s.strip()) for s in config['VelocityProximityDetectors']['radii'].split(',')]
 
         if len(radii) != len(keys):
-            print("Number of proximity detector keys and number of radii must match.")
+            raise ValueError("Number of proximity detector keys and number of radii must match.")
 
         proximityDetectors = []
         for i in range(len(keys)):
@@ -275,14 +282,51 @@ class Server:
 
         print(f"{h.name} : Sending OSC to \"{h.client._address}:{h.client._port}\" at address \"{addr}\" : {hapticValue}")
 
+def get_config_path():
+    # Determine the directory where the executable resides
+    exe_dir = os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else __file__)
+    config_path = os.path.join(exe_dir, 'Config.ini')
+
+    # Check if the config file exists at the expected location
+    if not os.path.exists(config_path):
+        # Config file does not exist, copying from internal bundle to the executable directory
+        if getattr(sys, 'frozen', False):
+            # When running in a frozen state, copy from temporary bundle directory
+            internal_config_path = os.path.join(sys._MEIPASS, 'Config.ini')
+        else:
+            # When not frozen, assume the config file is in the same directory as the script
+            internal_config_path = os.path.join(os.path.dirname(__file__), 'Config.ini')
+        
+        try:
+            shutil.copy(internal_config_path, config_path)
+            print(f"Config.ini has been copied to {config_path}")
+        except Exception as e:
+            print(f"Failed to copy Config.ini: {str(e)}")
+
+    return config_path
+
 if __name__ == "__main__":
 
     # Get the config file from the current directory
-    configFilepath = os.getcwd() + os.sep +'Config.ini'
 
+    configFilepath = get_config_path()
+
+try:
     # Read the configuration settings from the config file
     config = Config(configFilepath)
+except (FileNotFoundError,ValueError) as e:
+    print(f"Error: {e}")
 
+except configparser.Error as e:
+    print(f"Configuration Error: {e}")
+
+except Exception as e:
+    print(f"Unexpected error occurred: {e}")
+
+try:
     # Set up the server to listen for OSC parameters and forward them to the target server.
     server = Server(config)
+except Exception as e:
+    print(f"Unexpected error occurred: {e}")
 
+os.system("PAUSE")

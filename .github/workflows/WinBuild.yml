@@ -1,0 +1,56 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+
+jobs:
+  build-windows:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        
+      - name: Install Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+          
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+          
+      - name: Run PyInstaller
+        run: |
+          python -m PyInstaller main.spec
+          
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Windows_Build
+          path: dist/main.exe
+
+      - name: create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: Latest
+          release_name: Release ${{ GitHub.ref }}
+          body: |
+            vrc-osc-contact-velocity
+          draft: false
+          prerelease: false
+          
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_path: dist/main.exe
+          asset_name: vrc-osc-contact-velocity.exe
+          asset_content_type: application/zip

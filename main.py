@@ -7,6 +7,7 @@ import re
 import sys
 import shutil
 import configparser
+import psutil
 
 from pythonosc.dispatcher import Dispatcher
 from pythonosc import osc_server
@@ -306,6 +307,11 @@ def get_config_path():
     return config_path
 
 if __name__ == "__main__":
+
+    # Set the process priority to high
+    p = psutil.Process(os.getpid())
+    # Set to high priority. Options: psutil.BELOW_NORMAL_PRIORITY_CLASS, psutil.NORMAL_PRIORITY_CLASS, psutil.ABOVE_NORMAL_PRIORITY_CLASS, psutil.HIGH_PRIORITY_CLASS, psutil.REALTIME_PRIORITY_CLASS (Windows)
+    p.nice(psutil.HIGH_PRIORITY_CLASS)
 
     # Get the config file from the current directory
 

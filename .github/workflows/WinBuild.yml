@@ -25,26 +25,63 @@ jobs:
       - name: Run PyInstaller
         run: |
           python -m PyInstaller main.spec
-          
+
       - uses: actions/upload-artifact@v2
         with:
           name: Windows_Build
           path: dist/main.exe
 
-      - name: create release
+      - name: Get the current version
+        id: get_version
+        run: |
+          VERSION=$(cat version.txt)
+          echo "Current version is $VERSION"
+          echo "::set-output name=version::$VERSION"
+
+      - name: Increment version
+        id: increment_version
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          IFS='.' read -r -a PARTS <<< "$VERSION"
+          PARTS[2]=$((PARTS[2] + 1))
+          NEW_VERSION="${PARTS[0]}.${PARTS[1]}.${PARTS[2]}"
+          echo "New version is $NEW_VERSION"
+          echo "::set-output name=new_version::$NEW_VERSION"
+          
+      - name: Update version in version.txt
+        run: |
+          echo ${{ steps.increment_version.outputs.new_version }} > version.txt
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add version.txt
+          git commit -m "Bump version to ${{ steps.increment_version.outputs.new_version }}"
+          git push origin main
+
+      - name: Delete existing latest tag
+        run: |
+          if git rev-parse -q --verify "refs/tags/latest"; then
+            git tag -d latest
+            git push origin :refs/tags/latest
+          fi
+
+      - name: Create latest tag
+        run: |
+          git tag latest
+          git push origin latest
+
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: Latest
-          release_name: Release ${{ GitHub.ref }}
+          tag_name: "v${{ steps.increment_version.outputs.new_version }}"
+          release_name: "Release v${{ steps.increment_version.outputs.new_version }}"
           body: |
             vrc-osc-contact-velocity
           draft: false
           prerelease: false
-          overwrite: true
-          
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1

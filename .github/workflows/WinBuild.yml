@@ -33,38 +33,44 @@ jobs:
 
       - name: Get the current version
         id: get_version
+        shell: powershell
         run: |
-          VERSION=$(cat version.txt)
-          echo "Current version is $VERSION"
-          echo "::set-output name=version::$VERSION"
+          $version = Get-Content version.txt
+          Write-Output "Current version is $version"
+          echo "::set-output name=version::$version"
 
       - name: Increment version
         id: increment_version
+        shell: powershell
         run: |
-          VERSION=${{ steps.get_version.outputs.version }}
-          IFS='.' read -r -a PARTS <<< "$VERSION"
-          PARTS[2]=$((PARTS[2] + 1))
-          NEW_VERSION="${PARTS[0]}.${PARTS[1]}.${PARTS[2]}"
-          echo "New version is $NEW_VERSION"
-          echo "::set-output name=new_version::$NEW_VERSION"
+          $version = "${{ steps.get_version.outputs.version }}"
+          $parts = $version -split '\.'
+          $parts[2] = [int]$parts[2] + 1
+          $new_version = "$($parts[0]).$($parts[1]).$($parts[2])"
+          Write-Output "New version is $new_version"
+          echo "::set-output name=new_version::$new_version"
           
       - name: Update version in version.txt
+        shell: powershell
         run: |
-          echo ${{ steps.increment_version.outputs.new_version }} > version.txt
+          $new_version = "${{ steps.increment_version.outputs.new_version }}"
+          Set-Content version.txt $new_version
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add version.txt
-          git commit -m "Bump version to ${{ steps.increment_version.outputs.new_version }}"
+          git commit -m "Bump version to $new_version"
           git push origin main
 
       - name: Delete existing latest tag
+        shell: powershell
         run: |
-          if git rev-parse -q --verify "refs/tags/latest"; then
+          if (git rev-parse -q --verify "refs/tags/latest") {
             git tag -d latest
             git push origin :refs/tags/latest
-          fi
+          }
 
       - name: Create latest tag
+        shell: powershell
         run: |
           git tag latest
           git push origin latest
@@ -88,7 +94,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{steps.create_release.outputs.upload_url}}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: dist/main.exe
           asset_name: vrc-osc-contact-velocity.exe
           asset_content_type: application/zip

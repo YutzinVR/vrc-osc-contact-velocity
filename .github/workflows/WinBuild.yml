@@ -43,6 +43,7 @@ jobs:
             vrc-osc-contact-velocity
           draft: false
           prerelease: false
+          overwrite: true
           
       - name: Upload Release Asset
         id: upload-release-asset

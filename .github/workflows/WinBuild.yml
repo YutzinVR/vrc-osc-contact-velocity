@@ -50,7 +50,7 @@ jobs:
         run: |
           $changes = Get-Content changes.md -Raw
           $changes = $changes -replace "`n", "`r`n"
-          echo "::set-output name=body::$changes"
+          echo "CHANGES_BODY=$changes" >> $env:GITHUB_ENV
 
       - name: Get the current version
         id: get_version
@@ -95,7 +95,7 @@ jobs:
         with:
           tag_name: "v${{ steps.increment_version.outputs.new_version }}"
           release_name: "Release v${{ steps.increment_version.outputs.new_version }}"
-          body: ${{ steps.read_changes.outputs.body }}
+          body: ${{ env.CHANGES_BODY }}
           draft: false
           prerelease: false
 

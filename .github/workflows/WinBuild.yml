@@ -33,12 +33,23 @@ jobs:
           name: Windows_Build
           path: dist/main.exe
 
-      - name: Ensure version.txt exists
+      - name: Ensure version.txt and changes.md exist
         shell: powershell
         run: |
           if (-Not (Test-Path "version.txt")) {
             Write-Output "0.0.0" > version.txt
           }
+          if (-Not (Test-Path "changes.md")) {
+            Write-Output "No changes logged." > changes.md
+          }
+
+      - name: Read changes.md
+        id: read_changes
+        shell: powershell
+        run: |
+          $changes = Get-Content changes.md -Raw
+          $changes = $changes -replace "`n", "`r`n"
+          echo "::set-output name=body::$changes"
 
       - name: Get the current version
         id: get_version
@@ -89,6 +100,18 @@ jobs:
           git tag latest
           git push origin latest
 
+      - name: Create Latest Release
+        id: create_latest_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "latest"
+          release_name: "Latest Release"
+          body: ${{ steps.read_changes.outputs.body }}
+          draft: false
+          prerelease: false
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -97,10 +120,20 @@ jobs:
         with:
           tag_name: "v${{ steps.increment_version.outputs.new_version }}"
           release_name: "Release v${{ steps.increment_version.outputs.new_version }}"
-          body: |
-            vrc-osc-contact-velocity
+          body: ${{ steps.read_changes.outputs.body }}
           draft: false
           prerelease: false
+
+      - name: Upload Latest Release Asset
+        id: upload-latest-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_latest_release.outputs.upload_url }}
+          asset_path: dist/main.exe
+          asset_name: vrc-osc-contact-velocity.exe
+          asset_content_type: application/zip
 
       - name: Upload Release Asset
         id: upload-release-asset

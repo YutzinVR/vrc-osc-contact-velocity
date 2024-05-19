@@ -49,8 +49,9 @@ jobs:
         shell: powershell
         run: |
           $changes = Get-Content changes.md -Raw
-          $changes = $changes -replace "`n", "`r`n"
-          echo "CHANGES_BODY=$changes" >> $env:GITHUB_ENV
+          echo "CHANGES_BODY<<EOF" >> $env:GITHUB_ENV
+          echo "$changes" >> $env:GITHUB_ENV
+          echo "EOF" >> $env:GITHUB_ENV
 
       - name: Get the current version
         id: get_version

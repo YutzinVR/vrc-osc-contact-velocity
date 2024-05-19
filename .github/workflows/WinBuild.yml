@@ -10,8 +10,10 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
-        
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Install Python
         uses: actions/setup-python@v1
         with:
@@ -25,32 +27,88 @@ jobs:
       - name: Run PyInstaller
         run: |
           python -m PyInstaller main.spec
-          
+
       - uses: actions/upload-artifact@v2
         with:
           name: Windows_Build
           path: dist/vrc-osc-contact-velocity.exe
 
-      - name: create release
+      - name: Ensure version.txt exists
+        shell: powershell
+        run: |
+          if (-Not (Test-Path "version.txt")) {
+            Write-Output "0.0.0" > version.txt
+          }
+
+      - name: Get the current version
+        id: get_version
+        shell: powershell
+        run: |
+          $version = Get-Content version.txt
+          Write-Output "Current version is $version"
+          echo "::set-output name=version::$version"
+
+      - name: Increment version
+        id: increment_version
+        shell: powershell
+        run: |
+          $version = "${{ steps.get_version.outputs.version }}"
+          if ($version -match '^\d+\.\d+\.\d+$') {
+            $parts = $version -split '\.'
+            $parts[2] = [int]$parts[2] + 1
+            $new_version = "$($parts[0]).$($parts[1]).$($parts[2])"
+          } else {
+            $new_version = "0.0.1"
+          }
+          Write-Output "New version is $new_version"
+          echo "::set-output name=new_version::$new_version"
+          
+      - name: Update version in version.txt
+        shell: powershell
+        run: |
+          $new_version = "${{ steps.increment_version.outputs.new_version }}"
+          Set-Content version.txt $new_version
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout main
+          git add version.txt
+          git commit -m "Bump version to $new_version"
+          git push origin HEAD:main
+
+      - name: Delete existing latest tag
+        shell: powershell
+        run: |
+          if (git rev-parse -q --verify "refs/tags/latest") {
+            git tag -d latest
+            git push origin :refs/tags/latest
+          }
+
+      - name: Create latest tag
+        shell: powershell
+        run: |
+          git tag latest
+          git push origin latest
+
+      - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: Latest
-          release_name: Release ${{ GitHub.ref }}
+          tag_name: "v${{ steps.increment_version.outputs.new_version }}"
+          release_name: "Release v${{ steps.increment_version.outputs.new_version }}"
           body: |
             vrc-osc-contact-velocity
           draft: false
           prerelease: false
-          
+
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{steps.create_release.outputs.upload_url}}
-          asset_path: dist/vrc-osc-contact-velocity.exe
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/main.exe
           asset_name: vrc-osc-contact-velocity.exe
           asset_content_type: application/zip

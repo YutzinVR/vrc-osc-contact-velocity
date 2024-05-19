@@ -3,7 +3,8 @@ name: Windows Build
 on:
   workflow_dispatch:
   push:
-    branches: main
+    branches: 
+      - main
 
 jobs:
   build-windows:
@@ -100,18 +101,6 @@ jobs:
           git tag latest
           git push origin latest
 
-      - name: Create Latest Release
-        id: create_latest_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: "latest"
-          release_name: "Latest Release"
-          body: ${{ steps.read_changes.outputs.body }}
-          draft: false
-          prerelease: false
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -123,17 +112,6 @@ jobs:
           body: ${{ steps.read_changes.outputs.body }}
           draft: false
           prerelease: false
-
-      - name: Upload Latest Release Asset
-        id: upload-latest-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_latest_release.outputs.upload_url }}
-          asset_path: dist/main.exe
-          asset_name: vrc-osc-contact-velocity.exe
-          asset_content_type: application/zip
 
       - name: Upload Release Asset
         id: upload-release-asset

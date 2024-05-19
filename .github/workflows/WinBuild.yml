@@ -87,20 +87,6 @@ jobs:
           git commit -m "Bump version to $new_version"
           git push origin HEAD:main
 
-      - name: Delete existing latest tag
-        shell: powershell
-        run: |
-          if (git rev-parse -q --verify "refs/tags/latest") {
-            git tag -d latest
-            git push origin :refs/tags/latest
-          }
-
-      - name: Create latest tag
-        shell: powershell
-        run: |
-          git tag latest
-          git push origin latest
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

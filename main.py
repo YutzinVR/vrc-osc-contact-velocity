@@ -317,22 +317,22 @@ if __name__ == "__main__":
 
     configFilepath = get_config_path()
 
-try:
-    # Read the configuration settings from the config file
-    config = Config(configFilepath)
-except (FileNotFoundError,ValueError) as e:
-    print(f"Error: {e}")
+    try:
+        # Read the configuration settings from the config file
+        config = Config(configFilepath)
+    except (FileNotFoundError,ValueError) as e:
+        print(f"Error: {e}")
 
-except configparser.Error as e:
-    print(f"Configuration Error: {e}")
+    except configparser.Error as e:
+        print(f"Configuration Error: {e}")
 
-except Exception as e:
-    print(f"Unexpected error occurred: {e}")
+    except Exception as e:
+        print(f"Unexpected error occurred: {e}")
 
-try:
-    # Set up the server to listen for OSC parameters and forward them to the target server.
-    server = Server(config)
-except Exception as e:
-    print(f"Unexpected error occurred: {e}")
+    try:
+        # Set up the server to listen for OSC parameters and forward them to the target server.
+        server = Server(config)
+    except Exception as e:
+        print(f"Unexpected error occurred: {e}")
 
-os.system("PAUSE")
+    os.system("PAUSE")

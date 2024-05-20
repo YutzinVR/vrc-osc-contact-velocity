@@ -245,7 +245,7 @@ class Server:
             address = Server.parameterNameToVRCAddress(h.proximityParameterKey)
             self.dispatcher.map(address,Server.computeHapticValueAndSend, h)
         
-        partialDefaultFunction = functools.partial(Server.defaultHandler,args=[self])
+        partialDefaultFunction = functools.partial(Server.defaultHandler, self=self)
         self.dispatcher.set_default_handler(partialDefaultFunction)
 
         # Initialise the OSC listening server
@@ -291,10 +291,9 @@ class Server:
 
         print(f"{h.name} : Sending OSC to \"{h.client._address}:{h.client._port}\" at address \"{addr}\" : {hapticValue}")
     
-    def defaultHandler(addr, args : List[any], value:str) -> None:
+    def defaultHandler(self, addr, args : List[any], value:str) -> None:
         
-        server = args[0]
-        server.defaultClient.send_message(addr, value)
+        self.defaultClient.send_message(addr, value)
 
         print(f"Forwarding {addr} with value: {value}")
 

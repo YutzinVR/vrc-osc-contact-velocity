@@ -8,6 +8,7 @@ import sys
 import shutil
 import configparser
 import psutil
+import functools
 
 from pythonosc.dispatcher import Dispatcher
 from pythonosc import osc_server
@@ -227,6 +228,10 @@ class Server:
         # Initialise an instance of the dispatcher
         self.dispatcher = Dispatcher()
 
+        self.targetIP = config.targetIP
+        self.targetPort = config.targetPort
+        self.defaultClient = udp_client.SimpleUDPClient(self.targetIP, self.targetPort)
+
         self.velocityProximityDetectors = config.velocityProximityDetectors
         self.hapticDevices = config.hapticDevices
         
@@ -240,7 +245,8 @@ class Server:
             address = Server.parameterNameToVRCAddress(h.proximityParameterKey)
             self.dispatcher.map(address,Server.computeHapticValueAndSend, h)
         
-        self.dispatcher.set_default_handler(Server.defaultHandler)
+        partialDefaultFunction = functools.partial(Server.defaultHandler,args=[self])
+        self.dispatcher.set_default_handler(partialDefaultFunction)
 
         # Initialise the OSC listening server
         server = osc_server.ThreadingOSCUDPServer((config.sourceIP, config.sourcePort), self.dispatcher)
@@ -287,6 +293,9 @@ class Server:
     
     def defaultHandler(addr, args : List[any], value:str) -> None:
         
+        server = args[0]
+        server.defaultClient.send_message(addr, value)
+
         print(f"Forwarding {addr} with value: {value}")
 
 def get_config_path():

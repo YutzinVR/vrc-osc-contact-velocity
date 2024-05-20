@@ -68,6 +68,7 @@ class Config:
             hTargetPort = int(config[h]['targetPort'])
             hMinVelocity =  float(config[h]['minVelocity'])
             hMaxvelocity = float(config[h]['maxVelocity'])
+            hCalculationMode = int(config[h]['calculation_mode'])
             hVelocityProximityKeys = [s.strip() for s in config[h]['velocityProximityKeys'].split(',')]
             hVelocityProximityDetectors = self.getVelocityProximityDetectorsByKeys(keys=hVelocityProximityKeys)
             hProximityKey = config[h]['proximityKey']
@@ -78,7 +79,8 @@ class Config:
                                               hVelocityProximityDetectors,
                                               hMinVelocity, 
                                               hMaxvelocity, 
-                                              hProximityKey
+                                              hProximityKey,
+                                              hCalculationMode
                                               ))
         return hapticDevices
 
@@ -138,7 +140,7 @@ class HapticDevice:
     '''
     The HapticDevice class is an abstract representation of the haptic device, its response to a contact sender, and the target server to forward the OSC message to.
     '''
-    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str):
+    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str, calculation_mode:int=0):
         
         # initialise instance variables
         self.name = name
@@ -158,6 +160,8 @@ class HapticDevice:
 
         # Initialise the OSC client to send to
         self.client = udp_client.SimpleUDPClient(self.targetIP, self.targetPort)
+
+        self.calculation_mode = calculation_mode
     
     def updateSenderPosition(self) -> None:
         '''
@@ -176,9 +180,13 @@ class HapticDevice:
         v = Physics.constrainValue(v, 0, 1)
         p = Physics.constrainValue(self.proximityParameterValue,0,1)
 
-        return v * p
-
-        
+        match self.calculation_mode:
+            case 0:
+                return v * p
+            case 1:
+                return v
+            case _:
+                raise ("Invalid calculation mode")
 
 class Physics:
     '''
@@ -245,7 +253,7 @@ class Server:
             address = Server.parameterNameToVRCAddress(h.proximityParameterKey)
             self.dispatcher.map(address,Server.computeHapticValueAndSend, h)
         
-        partialDefaultFunction = functools.partial(Server.defaultHandler,args=[self])
+        partialDefaultFunction = functools.partial(Server.defaultHandler,args=self)
         self.dispatcher.set_default_handler(partialDefaultFunction)
 
         # Initialise the OSC listening server

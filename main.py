@@ -245,8 +245,7 @@ class Server:
             address = Server.parameterNameToVRCAddress(h.proximityParameterKey)
             self.dispatcher.map(address,Server.computeHapticValueAndSend, h)
         
-        partialDefaultFunction = functools.partial(Server.defaultHandler, self=self)
-        self.dispatcher.set_default_handler(partialDefaultFunction)
+        self.dispatcher.set_default_handler(Server.defaultHandler)
 
         # Initialise the OSC listening server
         server = osc_server.ThreadingOSCUDPServer((config.sourceIP, config.sourcePort), self.dispatcher)

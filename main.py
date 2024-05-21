@@ -253,7 +253,7 @@ class Server:
             address = Server.parameterNameToVRCAddress(h.proximityParameterKey)
             self.dispatcher.map(address,Server.computeHapticValueAndSend, h)
         
-        self.dispatcher.set_default_handler(Server.defaultHandler)
+        self.dispatcher.set_default_handler(self.default_handler)
 
         # Initialise the OSC listening server
         server = osc_server.ThreadingOSCUDPServer((config.sourceIP, config.sourcePort), self.dispatcher)
@@ -298,10 +298,10 @@ class Server:
 
         print(f"{h.name} : Sending OSC to \"{h.client._address}:{h.client._port}\" at address \"{addr}\" : {hapticValue}")
     
-    def defaultHandler(self, addr, args : List[any], value:str) -> None:
+    def default_handler(self, addr, *args) -> None:
         
+        value = args[-1]  # Assuming the last argument is the value
         self.defaultClient.send_message(addr, value)
-
         print(f"Forwarding {addr} with value: {value}")
 
 def get_config_path():

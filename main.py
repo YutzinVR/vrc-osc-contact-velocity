@@ -73,6 +73,7 @@ class Config:
                 hMinVelocity =  float(config[h]['minVelocity'])
                 hMaxvelocity = float(config[h]['maxVelocity'])
                 hCalculationMode = int(config[h]['calculation_mode'])
+                houtput_bool    = float(config[h]['output_bool'])
                 hVelocityProximityKeys = [s.strip() for s in config[h]['velocityProximityKeys'].split(',')]
                 hVelocityProximityDetectors = self.getVelocityProximityDetectorsByKeys(keys=hVelocityProximityKeys)
                 hProximityKey = config[h]['proximityKey']
@@ -86,7 +87,8 @@ class Config:
                                               hMinVelocity, 
                                               hMaxvelocity, 
                                               hProximityKey,
-                                              hCalculationMode
+                                              hCalculationMode,
+                                              houtput_bool
                                               ))
         return hapticDevices
 
@@ -146,7 +148,7 @@ class HapticDevice:
     '''
     The HapticDevice class is an abstract representation of the haptic device, its response to a contact sender, and the target server to forward the OSC message to.
     '''
-    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str, calculation_mode:int=0):
+    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str, calculation_mode:int, output_bool:int):
         
         # initialise instance variables
         self.name = name
@@ -168,6 +170,8 @@ class HapticDevice:
         self.client = udp_client.SimpleUDPClient(self.targetIP, self.targetPort)
 
         self.calculation_mode = calculation_mode
+
+        self.output_bool = output_bool
     
     def updateSenderPosition(self) -> None:
         '''
@@ -188,11 +192,15 @@ class HapticDevice:
 
         match self.calculation_mode:
             case 0:
-                return v * p
+                value = v * p
             case 1:
-                return v
+                value = v
             case _:
                 raise ("Invalid calculation mode")
+        
+        if self.output_bool > 0:
+            value = 1 if value > self.output_bool else 0
+        return value
 
 class Physics:
     '''
@@ -308,7 +316,7 @@ class Server:
         
         value = args[-1]  # Assuming the last argument is the value
         self.defaultClient.send_message(addr, value)
-        print(f"Forwarding {addr} with value: {value}")
+        #print(f"Forwarding {addr} with value: {value}")
 
 def get_config_path():
     # Determine the directory where the executable resides

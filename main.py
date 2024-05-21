@@ -30,21 +30,24 @@ class Config:
 
         self.config.read(filepath)
 
-        # Details of the VRC OSC server
-        self.sourceIP = self.config['Defaults']['sourceIP']
-        self.sourcePort = int(self.config['Defaults']['sourcePort'])
+        try:
+            # Details of the VRC OSC server
+            self.sourceIP = self.config['Defaults']['sourceIP']
+            self.sourcePort = int(self.config['Defaults']['sourcePort'])
 
-        # Details of the OSC router to send to
-        self.targetIP = self.config['Defaults']['targetIP']
-        self.targetPort = int(self.config['Defaults']['targetPort'])
+            # Details of the OSC router to send to
+            self.targetIP = self.config['Defaults']['targetIP']
+            self.targetPort = int(self.config['Defaults']['targetPort'])
 
-        # The velocity is mapped to a domain between 0.0 and 1.0
-        self.minVelocity = float(self.config['Defaults']['minVelocity'])
-        self.maxvelocity = float(self.config['Defaults']['maxVelocity'])
-
+            # The velocity is mapped to a domain between 0.0 and 1.0
+            self.minVelocity = float(self.config['Defaults']['minVelocity'])
+            self.maxvelocity = float(self.config['Defaults']['maxVelocity'])
+        except KeyError as e:
+            raise ValueError(f"Configuration file is missing a required key: {e}")
+        
         # Velocity proximity detectors
         self.velocityProximityDetectors = self.setupProximityDetectors()
-        
+
         # HAPTIC DEVICES
         self.hapticDevices = self.setupHapticDevices()
 
@@ -64,14 +67,17 @@ class Config:
 
         for h in hapticDeviceNames:
             
-            hTargetIP = config[h]['targetIP']
-            hTargetPort = int(config[h]['targetPort'])
-            hMinVelocity =  float(config[h]['minVelocity'])
-            hMaxvelocity = float(config[h]['maxVelocity'])
-            hCalculationMode = int(config[h]['calculation_mode'])
-            hVelocityProximityKeys = [s.strip() for s in config[h]['velocityProximityKeys'].split(',')]
-            hVelocityProximityDetectors = self.getVelocityProximityDetectorsByKeys(keys=hVelocityProximityKeys)
-            hProximityKey = config[h]['proximityKey']
+            try:
+                hTargetIP = config[h]['targetIP']
+                hTargetPort = int(config[h]['targetPort'])
+                hMinVelocity =  float(config[h]['minVelocity'])
+                hMaxvelocity = float(config[h]['maxVelocity'])
+                hCalculationMode = int(config[h]['calculation_mode'])
+                hVelocityProximityKeys = [s.strip() for s in config[h]['velocityProximityKeys'].split(',')]
+                hVelocityProximityDetectors = self.getVelocityProximityDetectorsByKeys(keys=hVelocityProximityKeys)
+                hProximityKey = config[h]['proximityKey']
+            except KeyError as e:
+                raise ValueError(f"Configuration file is missing a required key: {e}")
 
             hapticDevices.append(HapticDevice(h,
                                               hTargetIP,
@@ -343,9 +349,6 @@ if __name__ == "__main__":
         config = Config(configFilepath)
     except (FileNotFoundError,ValueError) as e:
         print(f"Error: {e}")
-
-    except configparser.Error as e:
-        print(f"Configuration Error: {e}")
 
     except Exception as e:
         print(f"Unexpected error occurred: {e}")

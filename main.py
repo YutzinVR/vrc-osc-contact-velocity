@@ -148,7 +148,7 @@ class HapticDevice:
     '''
     The HapticDevice class is an abstract representation of the haptic device, its response to a contact sender, and the target server to forward the OSC message to.
     '''
-    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str, calculation_mode:int, output_bool:int):
+    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str, calculation_mode:int, output_bool:float):
         
         # initialise instance variables
         self.name = name

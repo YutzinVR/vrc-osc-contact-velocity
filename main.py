@@ -8,6 +8,7 @@ import sys
 import shutil
 import configparser
 import psutil
+import functools
 
 from pythonosc.dispatcher import Dispatcher
 from pythonosc import osc_server
@@ -29,21 +30,24 @@ class Config:
 
         self.config.read(filepath)
 
-        # Details of the VRC OSC server
-        self.sourceIP = self.config['Defaults']['sourceIP']
-        self.sourcePort = int(self.config['Defaults']['sourcePort'])
+        try:
+            # Details of the VRC OSC server
+            self.sourceIP = self.config['Defaults']['sourceIP']
+            self.sourcePort = int(self.config['Defaults']['sourcePort'])
 
-        # Details of the OSC router to send to
-        self.targetIP = self.config['Defaults']['targetIP']
-        self.targetPort = int(self.config['Defaults']['targetPort'])
+            # Details of the OSC router to send to
+            self.targetIP = self.config['Defaults']['targetIP']
+            self.targetPort = int(self.config['Defaults']['targetPort'])
 
-        # The velocity is mapped to a domain between 0.0 and 1.0
-        self.minVelocity = float(self.config['Defaults']['minVelocity'])
-        self.maxvelocity = float(self.config['Defaults']['maxVelocity'])
-
+            # The velocity is mapped to a domain between 0.0 and 1.0
+            self.minVelocity = float(self.config['Defaults']['minVelocity'])
+            self.maxvelocity = float(self.config['Defaults']['maxVelocity'])
+        except KeyError as e:
+            raise ValueError(f"Configuration file is missing a required key: {e}")
+        
         # Velocity proximity detectors
         self.velocityProximityDetectors = self.setupProximityDetectors()
-        
+
         # HAPTIC DEVICES
         self.hapticDevices = self.setupHapticDevices()
 
@@ -63,13 +67,18 @@ class Config:
 
         for h in hapticDeviceNames:
             
-            hTargetIP = config[h]['targetIP']
-            hTargetPort = int(config[h]['targetPort'])
-            hMinVelocity =  float(config[h]['minVelocity'])
-            hMaxvelocity = float(config[h]['maxVelocity'])
-            hVelocityProximityKeys = [s.strip() for s in config[h]['velocityProximityKeys'].split(',')]
-            hVelocityProximityDetectors = self.getVelocityProximityDetectorsByKeys(keys=hVelocityProximityKeys)
-            hProximityKey = config[h]['proximityKey']
+            try:
+                hTargetIP = config[h]['targetIP']
+                hTargetPort = int(config[h]['targetPort'])
+                hMinVelocity =  float(config[h]['minVelocity'])
+                hMaxvelocity = float(config[h]['maxVelocity'])
+                hCalculationMode = int(config[h]['calculation_mode'])
+                houtput_bool    = float(config[h]['output_bool'])
+                hVelocityProximityKeys = [s.strip() for s in config[h]['velocityProximityKeys'].split(',')]
+                hVelocityProximityDetectors = self.getVelocityProximityDetectorsByKeys(keys=hVelocityProximityKeys)
+                hProximityKey = config[h]['proximityKey']
+            except KeyError as e:
+                raise ValueError(f"Configuration file is missing a required key: {e}")
 
             hapticDevices.append(HapticDevice(h,
                                               hTargetIP,
@@ -77,7 +86,9 @@ class Config:
                                               hVelocityProximityDetectors,
                                               hMinVelocity, 
                                               hMaxvelocity, 
-                                              hProximityKey
+                                              hProximityKey,
+                                              hCalculationMode,
+                                              houtput_bool
                                               ))
         return hapticDevices
 
@@ -137,7 +148,7 @@ class HapticDevice:
     '''
     The HapticDevice class is an abstract representation of the haptic device, its response to a contact sender, and the target server to forward the OSC message to.
     '''
-    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str):
+    def __init__(self, name:str, targetIP:str, targetPort:int, velocityProximityDetectors: List[ProximityDetector], minVelocity:float, maxVelocity:float, proximityParameterKey:str, calculation_mode:int, output_bool:float):
         
         # initialise instance variables
         self.name = name
@@ -157,6 +168,10 @@ class HapticDevice:
 
         # Initialise the OSC client to send to
         self.client = udp_client.SimpleUDPClient(self.targetIP, self.targetPort)
+
+        self.calculation_mode = calculation_mode
+
+        self.output_bool = output_bool
     
     def updateSenderPosition(self) -> None:
         '''
@@ -175,9 +190,17 @@ class HapticDevice:
         v = Physics.constrainValue(v, 0, 1)
         p = Physics.constrainValue(self.proximityParameterValue,0,1)
 
-        return v * p
-
+        match self.calculation_mode:
+            case 0:
+                value = v * p
+            case 1:
+                value = v
+            case _:
+                raise ("Invalid calculation mode")
         
+        if self.output_bool > 0:
+            value = 1 if value > self.output_bool else 0
+        return value
 
 class Physics:
     '''
@@ -227,6 +250,10 @@ class Server:
         # Initialise an instance of the dispatcher
         self.dispatcher = Dispatcher()
 
+        self.targetIP = config.targetIP
+        self.targetPort = config.targetPort
+        self.defaultClient = udp_client.SimpleUDPClient(self.targetIP, self.targetPort)
+
         self.velocityProximityDetectors = config.velocityProximityDetectors
         self.hapticDevices = config.hapticDevices
         
@@ -240,6 +267,8 @@ class Server:
             address = Server.parameterNameToVRCAddress(h.proximityParameterKey)
             self.dispatcher.map(address,Server.computeHapticValueAndSend, h)
         
+        self.dispatcher.set_default_handler(self.default_handler)
+
         # Initialise the OSC listening server
         server = osc_server.ThreadingOSCUDPServer((config.sourceIP, config.sourcePort), self.dispatcher)
         print("Serving on {}".format(server.server_address))
@@ -282,6 +311,11 @@ class Server:
         h.client.send_message(addr, hapticValue)
 
         print(f"{h.name} : Sending OSC to \"{h.client._address}:{h.client._port}\" at address \"{addr}\" : {hapticValue}")
+    
+    def default_handler(self, addr, *args) -> None:
+        
+        value = args[-1]  # Assuming the last argument is the value
+        self.defaultClient.send_message(addr, value)
 
 def get_config_path():
     # Determine the directory where the executable resides
@@ -322,9 +356,6 @@ if __name__ == "__main__":
         config = Config(configFilepath)
     except (FileNotFoundError,ValueError) as e:
         print(f"Error: {e}")
-
-    except configparser.Error as e:
-        print(f"Configuration Error: {e}")
 
     except Exception as e:
         print(f"Unexpected error occurred: {e}")

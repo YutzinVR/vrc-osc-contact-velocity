@@ -75,8 +75,8 @@ In this mode, only one contact receiver detects a contact, the other ones are us
 1. Create a new Unity object. In this example "Head" <br> <img src="./pictures/UnityObject.png" width="400" >
 2. Add a VRC Contact Receiver (Script) to the object. <br> <img src="./pictures/VrcContactReciver.png" width="400" >
 3. Setup your values as you see fit. <span style="color:red">!Important!</span> : Make sure that the "Receiver Type" is set to "Proximity" <br> <img src="./pictures/ContactOnAvatar1.png" width="400">
-4. Setup as many "velocity" contact receivers as you want. In this example, we have 4 contact receivers. <br> <img src="./pictures/VrcContactReciverVel1.png" width="400"> <img src="./pictures/VrcContactReciverVel2.png" width="400"> <br>
-5. The contact receivers have to be slightly offset from each other<img src="./pictures/MultipleContactOnAvatar.png" width="400"> <img src="./pictures/MultipleContactOnAvatar2.png" width="400">
+4. Setup as many "velocity" contact receivers as you want. In this example, we have 4 contact receivers. <br> <img src="./pictures/VrcContactReciverVel1.png" width="400"> <br> <img src="./pictures/VrcContactReciverVel2.png" width="400"> <br>
+5. The contact receivers have to be slightly offset from each other <br> <img src="./pictures/MultipleContactOnAvatar.png" width="400"> <br> <img src="./pictures/MultipleContactOnAvatar2.png" width="400">
 6. Setup the "Config.ini" file. This is an example for this application: <br>
     ``` ini
     [Defaults]

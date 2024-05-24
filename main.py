@@ -316,7 +316,6 @@ class Server:
         
         value = args[-1]  # Assuming the last argument is the value
         self.defaultClient.send_message(addr, value)
-        #print(f"Forwarding {addr} with value: {value}")
 
 def get_config_path():
     # Determine the directory where the executable resides

@@ -12,12 +12,11 @@
 
 ---
 
-
-
 <h2> 📝 Table of Contents </h2>
 
 - [🧐 About ](#-about-)
 - [🏁 Getting Started ](#-getting-started-)
+- [🚀 Building ](#-building-)
 - [✍️ Authors ](#️-authors-)
 - [🎉 Acknowledgements ](#-acknowledgements-)
 
@@ -32,13 +31,29 @@ An OSC router written in Python to intercept VRChat OSC parameters, calculate th
 3. Add unique parameter keys for each contact receiver to your animation controller and map those back to the respective receivers.
 4. Change the settings in the configuration file ```Config.ini```. Parameter keys should match those specified in your unity project.
 5. Run the server<br/>
- ```cmd
-vrc-osc-contact-velocity.exe
-```
+    ```cmd
+    vrc-osc-contact-velocity.exe
+    ```
 6. Run the haptice device server (eg. GiggleTech OSC router). Make sure to configure the correct IP, port, and parameter addresses to listen to this contact velocity server. Ensure that your haptic device is turned on.
 7. Open VRChat.
 
 For an in-depth guide on how to set up the contact receivers in Unity, see the [Avatar Setup Examples](./documentation/AvatarSetupExample.md).
+
+## 🚀 Building <a name = "building"></a>
+
+1. Clone the repository
+2. Install the dependencies
+    ```cmd
+    python install -r requirements.txt
+    ```
+3. Build the executable
+    ```cmd
+    python -m PyInstaller main.spec
+    ```
+    or run the command
+    ```cmd
+    python main.py
+    ```
 
 ## ✍️ Authors <a name = "authors"></a>
 
@@ -48,7 +63,7 @@ For an in-depth guide on how to set up the contact receivers in Unity, see the [
 See also the list of [contributors](https://github.com/YutzinVR/vrc-osc-contact-velocity/contributors) who participated in this project.
 
 ## 🎉 Acknowledgements <a name = "acknowledgement"></a>
+- [@Molnia](https://github.com/shellwitch)
 - TenderNya
-- Molnia
 - ShinyButton
 

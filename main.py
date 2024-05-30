@@ -194,7 +194,10 @@ class HapticDevice:
             case 0:
                 value = v * p
             case 1:
-                value = v
+                if self.proximityParameterValue > 0:
+                    value = v 
+                else: 
+                    value = 0.0
             case _:
                 raise ("Invalid calculation mode")
         

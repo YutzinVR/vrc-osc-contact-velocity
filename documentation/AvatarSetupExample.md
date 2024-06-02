@@ -2,11 +2,11 @@
 
 <h2> 📝 Table of Contents </h2>
 
-- [Simple Setup with one contact receiver](#simple-setup-with-one-contact-receiver)
-- [Advanced Setup with multiple contact receivers](#advanced-setup-with-multiple-contact-receivers)
+- [🔧 Simple Setup with one contact receiver](#-simple-setup-with-one-contact-receiver)
+- [🛠️ Advanced Setup with multiple contact receivers](#️-advanced-setup-with-multiple-contact-receivers)
 
 
-## Simple Setup with one contact receiver
+## 🔧 Simple Setup with one contact receiver
 1. Create a new Unity object. In this example "Head" <br> <img src="./pictures/UnityObject.png" width="400" >
 2. Add a VRC Contact Receiver (Script) to the object. <br> <img src="./pictures/VrcContactReciver.png" width="400" >
 3. Setup your values as you see fit. <span style="color:red">!Important!</span> : Make sure that the "Receiver Type" is set to "Proximity" <br> <img src="./pictures/ContactOnAvatar1.png" width="400">
@@ -66,7 +66,7 @@
 
 
 
-## Advanced Setup with multiple contact receivers
+## 🛠️ Advanced Setup with multiple contact receivers
 
 In this mode, the application can use multiple contact receivers to approximate the velocity of the contact sender. 
 

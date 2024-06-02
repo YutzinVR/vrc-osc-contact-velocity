@@ -16,6 +16,7 @@
 
 - [🧐 About ](#-about-)
 - [🏁 Getting Started ](#-getting-started-)
+- [📄 Documentation](#-documentation)
 - [🚀 Building ](#-building-)
 - [✍️ Authors ](#️-authors-)
 - [🎉 Acknowledgements ](#-acknowledgements-)
@@ -38,6 +39,11 @@ An OSC router written in Python to intercept VRChat OSC parameters, calculate th
 7. Open VRChat.
 
 For an in-depth guide on how to set up the contact receivers in Unity, see the [Avatar Setup Examples](./documentation/AvatarSetupExample.md).
+
+## 📄 Documentation
+
+- [OSC Router Setup](./documentation/OSCRouterSetup.md)
+- [Avatar Setup Examples](./documentation/AvatarSetupExample.md).
 
 ## 🚀 Building <a name = "building"></a>
 
